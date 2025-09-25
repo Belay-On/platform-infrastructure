@@ -2,10 +2,7 @@
 # not your cloud resources. Here you declare the providers
 # (plugins) and their versions.
 terraform {
-  backend "gcs" {
-    bucket = var.gcp_bucket
-    prefix = var.environment
-  }
+  backend "gcs" {}
 
   required_providers {
     google = {
