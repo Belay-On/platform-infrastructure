@@ -13,13 +13,13 @@ variable "zone" {
 variable "gcp_project_id" {
   description = "GCP Project ID"
   type        = string
-  sensitive =  true
+  sensitive   = true
 }
 
 variable "gcp_bucket" {
   description = "GCP Bucket name for Terraform state"
   type        = string
-  sensitive =  true
+  sensitive   = true
 }
 
 variable "environment" {
