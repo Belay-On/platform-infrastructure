@@ -19,7 +19,7 @@ on:
 
 jobs:
   terraform-apply:
-    uses: ./.github/workflows/reusable-terraform-apply.yml
+    uses: .github/workflows/reusable-terraform-apply.yml
     with:
       environment: ${{ github.event.inputs.environment || 'dev' }}
     secrets:
