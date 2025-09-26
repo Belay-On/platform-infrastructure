@@ -1,21 +1,17 @@
-name: 'Terraform'
+name: Reusable Terraform Apply
 
 on:
-  pull_request:
-    branches: ["main"]          # Run plan on PRs targeting main
-  push:
-    branches: ["main"]          # Trigger for auto-apply in dev
-  workflow_dispatch:             # Manual trigger for stage/prod
+  workflow_call:
     inputs:
       environment:
         description: 'Environment to deploy'
         required: true
-        default: 'dev'
-        type: choice
-        options:
-          - dev
-          - stage
-          - prod
+        type: string
+    secrets:
+      GCP_PROJECT_ID:
+        required: true
+      GCP_BUCKET:
+        required: true
 
 permissions:
   contents: read
@@ -25,10 +21,10 @@ jobs:
   terraform:
     name: 'Terraform'
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'dev' }}
-    ## injected by github into terraform variables
+    environment: ${{ inputs.environment }}
+
     env:
-      TF_VAR_environment: ${{ github.event.inputs.environment || 'dev' }}
+      TF_VAR_environment: ${{ inputs.environment }}
       TF_VAR_gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
       TF_VAR_gcp_bucket: ${{ secrets.GCP_BUCKET }}
 
@@ -55,7 +51,7 @@ jobs:
         run: |
           terraform init \
             -backend-config="bucket=${{ secrets.GCP_BUCKET }}" \
-            -backend-config="prefix=${{ github.event.inputs.environment || 'dev' }}"
+            -backend-config="prefix=${{ inputs.environment }}"
 
       - name: Terraform Format
         working-directory: terraform
@@ -68,7 +64,6 @@ jobs:
       - name: Terraform Apply
         working-directory: terraform
         if: |
-          (github.ref == 'refs/heads/main' && github.event_name == 'push' && (github.event.inputs.environment == 'dev' || github.event.inputs.environment == '')) ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.environment != 'dev')
+          (github.ref == 'refs/heads/main' && github.event_name == 'push' && inputs.environment == 'dev') ||
+          (github.event_name == 'workflow_dispatch' && inputs.environment != 'dev')
         run: terraform apply -auto-approve -input=false
-
