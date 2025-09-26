@@ -17,6 +17,10 @@ on:
           - stage
           - prod
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   terraform-apply:
     uses: belay-on/platform-infrastructure/.github/workflows/reusable-terraform-apply.yml@main
