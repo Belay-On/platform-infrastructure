@@ -16,19 +16,8 @@ variable "gcp_project_id" {
   sensitive   = true
 }
 
-variable "gcp_bucket" {
-  description = "GCP Bucket name for Terraform state"
-  type        = string
-  sensitive   = true
-}
-
 variable "environment" {
   description = "Deployment environment (dev, stage, prod)"
   type        = string
   default     = "dev"
-}
-
-variable "workload_identity_provider" {
-  description = "Path to GCP workload identity provider"
-  type        = string
 }
