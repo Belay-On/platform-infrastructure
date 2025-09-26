@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   terraform-apply:
-    uses: belay-on/platform-infrastructure/.github/workflows/reusable-terraform-apply.yml@main
+    uses: .github/workflows/reusable-terraform-apply.yml
     with:
       environment: ${{ github.event.inputs.environment || 'dev' }}
     secrets:
