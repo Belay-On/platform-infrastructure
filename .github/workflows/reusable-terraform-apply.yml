@@ -1,4 +1,4 @@
-name: Reusable Terraform Apply
+name: Reusable - Terraform Apply
 
 on:
   workflow_call:
@@ -23,6 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
 
+    # Set Terraform environment variables from GitHub Actions inputs and secrets.
+    # Terraform automatically maps environment variables prefixed with TF_VAR_
+    # to corresponding variables in your Terraform code.
+    # This allows dynamic, per-environment Terraform runs without modifying .tfvars files.
     env:
       TF_VAR_environment: ${{ inputs.environment }}
       TF_VAR_gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
@@ -39,7 +43,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Setup gcloud
+      - name: Auth gcloud
         uses: google-github-actions/auth@v3
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
