@@ -28,7 +28,7 @@ jobs:
     # This allows dynamic, per-environment Terraform runs without modifying .tfvars files.
     env:
       TF_VAR_ENVIRONMENT: ${{ inputs.environment }}
-      TF_VAR_GCP_PROJECT_ID: ${{ secrets.gcp_project_id }}
+      TF_VAR_GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
       TF_VAR_GCP_BUCKET: ${{ secrets.gcp_bucket }}
 
     defaults:
