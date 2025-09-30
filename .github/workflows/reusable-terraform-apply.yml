@@ -22,7 +22,6 @@ jobs:
     name: 'Terraform'
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
-
     # Set Terraform environment variables from GitHub Actions inputs and secrets.
     # Terraform automatically maps environment variables prefixed with TF_VAR_
     # to corresponding variables in your Terraform code.

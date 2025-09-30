@@ -19,20 +19,12 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      REGION: us-central1
+      ARTIFACT_REPOSITORY_ID: belay-on-artifacts
 
     steps:
-      # 1️⃣ Load Terraform variables
-      - name: Load Terraform variables
-        run: |
-          # Load variables from terraform.tfvars into GitHub Actions environment
-          # These will be used later (e.g., for IMAGE_URI)
-          echo "Loading variables from terraform.tfvars"
-          grep -v '^#' terraform/terraform.tfvars | sed 's/ *= */=/' | while read line; do
-            key=$(echo "$line" | cut -d= -f1)
-            value=$(echo "$line" | cut -d= -f2)
-            echo "${key}=${value}" >> $GITHUB_ENV
-          done
-
       # 2️⃣ Checkout the repository
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,14 +48,14 @@ jobs:
         with:
           username: oauth2accesstoken
           password: ${{ steps.auth.outputs.auth_token }}
-          registry: ${{ env.region }}-docker.pkg.${{ inputs.environment }}
+          registry: ${{ env.REGION }}-docker.pkg.${{ inputs.environment }}
         # Logs into the container registry. Prepares for pushing the image built from the Dockerfile.
 
       # 5️⃣ Build and push the container image
       - name: Build and Push Container
         run: |
           # Construct the full image URI including registry, project, repository, service, and environment tag
-          IMAGE_URI="${{ env.region }}-docker.pkg.${{ inputs.environment }}/${{ env.project_id }}/${{ env.artifact_repository_id }}/${{ inputs.service }}:${{ inputs.environment }}"
+          IMAGE_URI="${{ env.REGION }}-docker.pkg.${{ inputs.environment }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY_ID }}/${{ inputs.service }}:${{ inputs.environment }}"
           echo "IMAGE_URI=$IMAGE_URI"
 
           # ===== Dockerfile is USED HERE =====
@@ -82,9 +74,9 @@ jobs:
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: "${{ inputs.service }}-${{ inputs.environment }}"
-          region: ${{ env.region }}
+          region: ${{ env.REGION }}
           # Uses the image built from the Dockerfile above
-          image: "${{ env.region }}-docker.pkg.${{ inputs.environment }}/${{ env.project_id }}/${{ env.artifact_repository_id }}/${{ inputs.service }}:${{ inputs.environment }}"
+          image: "${{ env.REGION }}-docker.pkg.${{ inputs.environment }}/${{ secrets.GCP_PROJECT_ID  }}/${{ env.ARTIFACT_REPOSITORY_ID }}/${{ inputs.service }}:${{ inputs.environment }}"
         # Cloud Run runs the container image. It doesn't see the Dockerfile directly,
         # but everything baked in the image (JDK, Spring Boot jar, Java agent, ports) comes from it.
 
