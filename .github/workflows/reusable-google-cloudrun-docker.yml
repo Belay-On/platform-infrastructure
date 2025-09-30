@@ -54,6 +54,12 @@ jobs:
       # 5️⃣ Build and push the container image
       - name: Build and Push Container
         run: |
+          # ======== Set variables ========
+          # REGION="${{ env.REGION }}"
+          # PROJECT="${{ secrets.GCP_PROJECT_ID }}"
+          # REPO="${{ env.ARTIFACT_REPOSITORY_ID }}"
+          # SERVICE="${{ inputs.service }}"
+          # ENVIRONMENT="${{ inputs.environment }}"
           # Construct the full image URI including registry, project, repository, service, and environment tag
           IMAGE_URI="${{ env.REGION }}-docker.pkg.${{ inputs.environment }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY_ID }}/${{ inputs.service }}:${{ inputs.environment }}"
           echo "IMAGE_URI=$IMAGE_URI"
