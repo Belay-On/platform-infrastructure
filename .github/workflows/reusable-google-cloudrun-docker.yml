@@ -21,18 +21,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Load Terraform variables
       - name: Load Terraform variables
         run: |
-          echo "Loading variables from deploy.tfvars"
-          grep -v '^#' deploy.tfvars | sed 's/ *= */=/' | while read line; do
+          # Load variables from terraform.tfvars into GitHub Actions environment
+          # These will be used later (e.g., for IMAGE_URI)
+          echo "Loading variables from terraform.tfvars"
+          grep -v '^#' terraform.tfvars | sed 's/ *= */=/' | while read line; do
             key=$(echo "$line" | cut -d= -f1)
             value=$(echo "$line" | cut -d= -f2)
             echo "${key}=${value}" >> $GITHUB_ENV
           done
 
+      # 2️⃣ Checkout the repository
       - name: Checkout
         uses: actions/checkout@v4
+        # This makes your Dockerfile, source code, and any scripts available
+        # on the GitHub runner. Needed for docker build.
 
+      # 3️⃣ Authenticate to GCP
       - name: Auth gcloud
         id: auth
         uses: google-github-actions/auth@v3
@@ -40,21 +47,34 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account: "infra-automation-global@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
           workload_identity_provider: "projects/644009734493/locations/global/workloadIdentityPools/github/providers/github-repo-provider"
+        # Prepares GCP auth for pushing images and deploying to Cloud Run.
+        # Dockerfile not used yet.
 
+      # 4️⃣ Docker login
       - name: Docker Auth
         uses: docker/login-action@v3
         with:
           username: oauth2accesstoken
           password: ${{ steps.auth.outputs.auth_token }}
           registry: ${{ env.region }}-docker.pkg.${{ inputs.environment }}
+        # Logs into the container registry. Prepares for pushing the image built from the Dockerfile.
 
+      # 5️⃣ Build and push the container image
       - name: Build and Push Container
         run: |
+          # Construct the full image URI including registry, project, repository, service, and environment tag
           IMAGE_URI="${{ env.region }}-docker.pkg.${{ inputs.environment }}/${{ env.project_id }}/${{ env.artifact_repository_id }}/${{ inputs.service }}:${{ inputs.environment }}"
           echo "IMAGE_URI=$IMAGE_URI"
+
+          # ===== Dockerfile is USED HERE =====
+          # 'docker build -t ... .' reads the Dockerfile in the current directory
+          # and builds the container image with everything defined in it
           docker build -t "$IMAGE_URI" .
+
+          # Push the built image to your Artifact Registry
           docker push "$IMAGE_URI"
 
+      # 6️⃣ Deploy to Cloud Run
       - name: Deploy to Cloud Run
         if: |
           (github.ref == 'refs/heads/main' && github.event_name == 'push' && inputs.environment == 'dev') ||
@@ -63,11 +83,17 @@ jobs:
         with:
           service: "${{ inputs.service }}-${{ inputs.environment }}"
           region: ${{ env.region }}
+          # Uses the image built from the Dockerfile above
           image: "${{ env.region }}-docker.pkg.${{ inputs.environment }}/${{ env.project_id }}/${{ env.artifact_repository_id }}/${{ inputs.service }}:${{ inputs.environment }}"
+        # Cloud Run runs the container image. It doesn't see the Dockerfile directly,
+        # but everything baked in the image (JDK, Spring Boot jar, Java agent, ports) comes from it.
 
+      # 7️⃣ Show output
       - name: Show output
         if: |
           (github.ref == 'refs/heads/main' && github.event_name == 'push' && inputs.environment == 'dev') ||
           (github.event_name == 'workflow_dispatch' && inputs.environment != 'dev')
         run: echo "Deployed to ${{ steps.deploy.outputs.url }}"
+        # Just prints the deployed Cloud Run URL. Dockerfile not used here.
+
 
