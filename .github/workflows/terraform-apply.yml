@@ -27,5 +27,5 @@ jobs:
     with:
       environment: ${{ github.event.inputs.environment || 'dev' }}
     secrets:
-      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-      GCP_BUCKET: ${{ secrets.GCP_BUCKET }}
+      gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
+      gcp_bucket: ${{ secrets.GCP_BUCKET }}
