@@ -11,6 +11,9 @@ on:
         description: 'Environment to deploy'
         required: true
         type: string
+    secrets:
+      gcp_project_id:
+        required: true
 
 permissions:
   contents: read
@@ -36,8 +39,8 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v3
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account: "infra-automation-global@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
+          project_id: ${{ secrets.gcp_project_id }}
+          service_account: "infra-automation-global@${{ secrets.gcp_project_id }}.iam.gserviceaccount.com"
           workload_identity_provider: "projects/644009734493/locations/global/workloadIdentityPools/github/providers/github-repo-provider"
         # Prepares GCP auth for pushing images and deploying to Cloud Run.
         # Dockerfile not used yet.
@@ -56,12 +59,12 @@ jobs:
         run: |
           # ======== Set variables ========
           # REGION="${{ env.REGION }}"
-          # PROJECT="${{ secrets.GCP_PROJECT_ID }}"
+          # PROJECT="${{ secrets.gcp_project_id }}"
           # REPO="${{ env.ARTIFACT_REPOSITORY_ID }}"
           # SERVICE="${{ inputs.service }}"
           # ENVIRONMENT="${{ inputs.environment }}"
           # Construct the full image URI including registry, project, repository, service, and environment tag
-          IMAGE_URI="${{ env.REGION }}-docker.pkg.${{ inputs.environment }}/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY_ID }}/${{ inputs.service }}:${{ inputs.environment }}"
+          IMAGE_URI="${{ env.REGION }}-docker.pkg.${{ inputs.environment }}/${{ secrets.gcp_project_id }}/${{ env.ARTIFACT_REPOSITORY_ID }}/${{ inputs.service }}:${{ inputs.environment }}"
           echo "IMAGE_URI=$IMAGE_URI"
 
           # ===== Dockerfile is USED HERE =====
@@ -82,7 +85,7 @@ jobs:
           service: "${{ inputs.service }}-${{ inputs.environment }}"
           region: ${{ env.REGION }}
           # Uses the image built from the Dockerfile above
-          image: "${{ env.REGION }}-docker.pkg.${{ inputs.environment }}/${{ secrets.GCP_PROJECT_ID  }}/${{ env.ARTIFACT_REPOSITORY_ID }}/${{ inputs.service }}:${{ inputs.environment }}"
+          image: "${{ env.REGION }}-docker.pkg.${{ inputs.environment }}/${{ secrets.gcp_project_id  }}/${{ env.ARTIFACT_REPOSITORY_ID }}/${{ inputs.service }}:${{ inputs.environment }}"
         # Cloud Run runs the container image. It doesn't see the Dockerfile directly,
         # but everything baked in the image (JDK, Spring Boot jar, Java agent, ports) comes from it.
 
