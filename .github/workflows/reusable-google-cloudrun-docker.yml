@@ -27,7 +27,7 @@ jobs:
           # Load variables from terraform.tfvars into GitHub Actions environment
           # These will be used later (e.g., for IMAGE_URI)
           echo "Loading variables from terraform.tfvars"
-          grep -v '^#' terraform.tfvars | sed 's/ *= */=/' | while read line; do
+          grep -v '^#' terraform/terraform.tfvars | sed 's/ *= */=/' | while read line; do
             key=$(echo "$line" | cut -d= -f1)
             value=$(echo "$line" | cut -d= -f2)
             echo "${key}=${value}" >> $GITHUB_ENV
