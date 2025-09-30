@@ -16,8 +16,8 @@ variable "gcp_project_id" {
   sensitive   = true
 }
 
-variable "environment" {
-  description = "Deployment environment (dev, stage, prod)"
+variable "artifact_repository_id" {
+  description = "Name of GSP Artifact Registry Repository"
   type        = string
-  default     = "dev"
 }
+

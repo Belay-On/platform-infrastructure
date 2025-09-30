@@ -1,6 +1,3 @@
-# The terraform block is used to configure Terraform itself,
-# not your cloud resources. Here you declare the providers
-# (plugins) and their versions.
 terraform {
   backend "gcs" {}
 
@@ -18,9 +15,10 @@ provider "google" {
   zone    = var.zone
 }
 
-resource "google_artifact_registry_repository" "belay_on_repo" {
+resource "google_artifact_registry_repository" "belay_on_artifacts" {
   location      = var.region
-  repository_id = "belay-on-docker-${var.environment}"
-  description   = "Belay On Docker Repository for ${var.environment}"
+  repository_id = "belay-on-artifacts"
+  description   = "Artifact Registry for all Belay On Docker images"
   format        = "DOCKER"
 }
+
